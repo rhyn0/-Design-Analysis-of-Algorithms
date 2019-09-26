@@ -38,7 +38,6 @@ public class DestructiveTest {
       }
     }
     int i = safe + 1;
-
     while(broken && i < highCheck){
       if(secondDrop == -1)
         secondDrop = i;
