@@ -4,8 +4,10 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Arrays;
 
 class MyGraph  {
 	ArrayList<Vertex> vertices = new ArrayList<Vertex>();
@@ -23,11 +25,9 @@ class MyGraph  {
 				if (!v.discovered)
 					ret.add(bfs(v));
 			}
+			List<Integer> size = Arrays.asList(ret.size());
+			ret.add(0, new HashSet<>(size));
 			return ret;
-	 }
-
-	 public boolean bipartiteCheck(){
-		 return true;
 	 }
 
 	 public HashSet<Integer> bfs(Vertex v){
@@ -37,15 +37,41 @@ class MyGraph  {
 		 queue.add(v);
 		 component.add(v.key);
 		 while (queue.size() != 0){
-			 for(Vertex u : v.edges){
-				 if (!u.discovered)
+			 for(Vertex u : queue.get(0).edges){
+				 if (!u.discovered){
 				 	queue.add(u);
 					component.add(u.key);
+					u.discovered = true;
+				 }
 			 }
 			 queue.remove(0);
 		 }
 		 return component;
 	 }
+
+	 public boolean bipartiteCheck(){
+		ArrayList<Vertex> queue = new ArrayList<>();
+
+		for(Vertex u : vertices){
+			if(u.color == -1){
+		 		queue.add(u);
+				u.color = 1;
+		 		while(queue.size() != 0){
+			 		for(Vertex v : queue.get(0).edges){
+				 		if (v.color == -1){
+					 		v.color = 1 - queue.get(0).color;
+					 		queue.add(v);
+				 		}
+				 		else if(v.color == queue.get(0).color){
+					 		return false;
+				 		}
+			 		}
+					queue.remove(0);
+		 		}
+			}
+		}
+		return true;
+	}
 
    void readfile_graph(String filename) throws FileNotFoundException  {
       int x,y;
