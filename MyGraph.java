@@ -19,26 +19,30 @@ class MyGraph  {
 
 	 public ArrayList<HashSet<Integer>> connectCheck(){
 		 ArrayList<HashSet<Integer>> ret = new ArrayList<>();
-			for(Vertex v : vertices){
+		 for(Vertex v : vertices){
 				if (!v.discovered)
-					ret.add(dfs(v));
+					ret.add(bfs(v));
 			}
 			return ret;
 	 }
 
 	 public boolean bipartiteCheck(){
-
+		 return true;
 	 }
 
 	 public HashSet<Integer> bfs(Vertex v){
 		 v.discovered = true;
 		 HashSet<Integer> component = new HashSet<Integer>();
-		 List<Vertex> queue = new ArrayList<Vertex>();
+		 ArrayList<Vertex> queue = new ArrayList<Vertex>();
 		 queue.add(v);
 		 component.add(v.key);
-		 for (Vertex u : v.edges){
-			 if (!u.discovered)
-			 	component.add(dfs(u));
+		 while (queue.size() != 0){
+			 for(Vertex u : v.edges){
+				 if (!u.discovered)
+				 	queue.add(u);
+					component.add(u.key);
+			 }
+			 queue.remove(0);
 		 }
 		 return component;
 	 }
