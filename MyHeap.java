@@ -101,14 +101,13 @@ public class MyHeap{
 
   public static int[] heapSortDecreasing(int[] values){
     int[] temp;
-    this.capacity = values.length;
-    this.heap = new int[values.length + 1];
+    MyHeap myHeap = new MyHeap(values.length);
+    myHeap.buildHeap(values);
     temp = new int[values.length];
-    buildHeap(values);
-    while(this.size > 1){
-      temp[this.size - 1] = deleteMin();
+    while(myHeap.size > 1){
+      temp[myHeap.size - 1] = myHeap.deleteMin();
     }
-    temp[0] = this.heap[1];
+    temp[0] = myHeap.heap[1];
     return temp;
   }
 }

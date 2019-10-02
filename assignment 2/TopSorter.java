@@ -20,8 +20,8 @@ class TopSorter  {
    }
 
 	 public ArrayList<Integer> topSortGenerator(String filename){
-		 int[] inDegree;
-		 ArrayList<Integer> temp, ret;
+		 ArrayList<Integer> degreeList;
+		 ArrayList<Integer> ret = new ArrayList<Integer>();
 		 boolean dag = true;
 		 try{
 			 readfile_graph(filename);
@@ -29,96 +29,55 @@ class TopSorter  {
 		 catch (FileNotFoundException e){
 			 System.err.println("File not found");
 		 }
-		 ret = new ArrayList<>(vertices.size());
-		 inDegree = new int[vertices.size() + 1];
-		 inDegree[0] = -1;
-		 for (int i = 0; i < vertices.size(); ++i){
-			 Vertex v = vertices.get(i);
-			 for(int j = 0; j < v.degree; ++j){
-			 	inDegree[v.edges.get(j).key] += 1;
-		 	 }
-		 }
-		 temp = new ArrayList<Integer>(Arrays.asList(array));
+
+		 degreeList = calcInDegree();
 		 while(dag){
-			 for (int k = 1; k < temp.size(); ++k){
-				 if(!temp.contains(0)){
-					 dag = false;
-					 break;
-				 }
-				 if(temp.get(k) == 0){
-					 ret.add(k);
-					 temp = reduceDegree(temp, k);
+			 if(!degreeList.contains(0)){
+				 dag = false;
+				 break;
+			 }
+			 for(int j = 0; j < degreeList.size(); ++j){
+				 if (degreeList.get(j) == 0){
+					 ret.add(j + 1);
+					 degreeList = reduceDegree(degreeList, j);
 					 break;
 				 }
 			 }
 		 }
-		 for(int l = ret.size(); l < vertices.size(); ++l){
+		 for (int i = ret.size(); i < vertices.size(); ++i){
 			 ret.add(-1);
 		 }
 		 return ret;
 	 }
 
-	 public ArrayList<Integer> reduceDegree(ArrayList<Integer> given, int index){
-		 Vertex u = vertices.get(k);
-		 for (int i = 0; i < u.edges.size(); ++i){
-			 given.get(u.edges.get(i)) -= 1;
+	 public ArrayList<Integer> calcInDegree(){
+		 ArrayList<Integer> ret;
+		 ArrayList<Vertex> list;
+		 int check;
+		 Integer[] arr = new Integer[vertices.size()];
+		 for(int a = 0; a < vertices.size(); ++a){
+			 arr[a] = 0;
 		 }
-		 return given;
-	 }
-
-	 public ArrayList<HashSet<Integer>> connectCheck(){
-		 ArrayList<HashSet<Integer>> ret = new ArrayList<>();
-		 for(Vertex v : vertices){
-				if (!v.discovered)
-					ret.add(bfs(v));
-			}
-			List<Integer> size = Arrays.asList(ret.size());
-			ret.add(0, new HashSet<>(size));
-			return ret;
-	 }
-
-	 public HashSet<Integer> bfs(Vertex v){
-		 v.discovered = true;
-		 HashSet<Integer> component = new HashSet<Integer>();
-		 ArrayList<Vertex> queue = new ArrayList<Vertex>();
-		 queue.add(v);
-		 component.add(v.key);
-		 while (queue.size() != 0){
-			 for(Vertex u : queue.get(0).edges){
-				 if (!u.discovered){
-				 	queue.add(u);
-					component.add(u.key);
-					u.discovered = true;
-				 }
+		 for(int i = 0; i < vertices.size(); ++i){
+			 list = vertices.get(i).edges;
+			 for (int j = 0; j < list.size(); ++j){
+				 arr[list.get(j).key - 1] += 1;
 			 }
-			 queue.remove(0);
 		 }
-		 return component;
+		 ret = new ArrayList<Integer>(Arrays.asList(arr));
+		 return ret;
 	 }
 
-	 public boolean bipartiteCheck(){
-		ArrayList<Vertex> queue = new ArrayList<>();
-
-		for(Vertex u : vertices){
-			if(u.color == -1){
-		 		queue.add(u);
-				u.color = 1;
-		 		while(queue.size() != 0){
-			 		for(Vertex v : queue.get(0).edges){
-				 		if (v.color == -1){
-					 		v.color = 1 - queue.get(0).color;
-					 		queue.add(v);
-				 		}
-				 		else if(v.color == queue.get(0).color){
-					 		return false;
-				 		}
-			 		}
-					queue.remove(0);
-		 		}
-			}
-		}
-		return true;
-	}
+	 public ArrayList<Integer> reduceDegree(ArrayList<Integer> given, int index){
+		 ArrayList<Integer> ret = given;
+		 Vertex u = vertices.get(index);
+		 ArrayList<Vertex> edgeList = u.edges;
+		 for (int i = 0; i < edgeList.size(); ++i){
+			 ret.set(edgeList.get(i).key - 1, ret.get(edgeList.get(i).key - 1) - 1);
+		 }
+		 ret.set(index, -1);
+		 return ret;
+	 }
 
    void readfile_graph(String filename) throws FileNotFoundException  {
       int x,y;
