@@ -8,6 +8,9 @@ public class MyHeap{
   public MyHeap(){
       this.capacity = 50;
       this.heap = new int[50 + 1];
+      for(int i = 0; i < 51; ++i){
+        this.heap[i] = 0;
+      }
       this.size = 0;
   }
 
@@ -15,13 +18,16 @@ public class MyHeap{
     this.capacity = capa;
     this.size = 0;
     this.heap = new int[capa + 1];
+    for(int i = 0; i <= capa; ++i){
+      this.heap[i] = 0;
+    }
   }
 
   public boolean buildHeap(int[] values){
     if(values.length > this.capacity){
       return false;
     }
-    for (int i = 0; i < this.capacity; ++i){
+    for (int i = 0; i < values.length; ++i){
       this.heap[i + 1] = values[i];
       ++(this.size);
     }
