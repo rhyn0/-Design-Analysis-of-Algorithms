@@ -6,7 +6,7 @@ public class Inversions{
     int catcher = 0;
     int middle = (arr.length - 1)/2;
     ArrayList<Integer> mine = new ArrayList<Integer>(arr.length);
-    for(int i = 0; i < arr.length; ++i){           // turn primitive array into ArrayList to work in passing by reference
+    for(int i = 0; i < arr.length; ++i){
       mine.add(arr[i]);
     }
 
@@ -30,26 +30,22 @@ public class Inversions{
     int size1 = m - left + 1;
     int size2 = right - m;
 
-    int L[] = new int[size1];     // make temporary arrays to help sort
+    int L[] = new int[size1];
     int R[] = new int[size2];
 
-    if (left == right)            // fast out for array of size 1
-      return 0;
-
-    for(int i = 0; i < size1; ++i) // divide full array into halves
+    for(int i = 0; i < size1; ++i)
       L[i] = arr.get(left + i);
     for (int j = 0; j < size2; ++j)
       R[j] = arr.get(m + 1 + j);
-
     int i = 0, j = 0;
     int k = left;
     while (i < size1 && j < size2){
-      if (L[i] < R[j]){           // if this case, then the elements were in proper order. COMPARISON
+      if (L[i] < R[j]){
         arr.set(k, L[i]);
         ++i;
       }
-      else{                       // element that is in wrong order, needs to move past the remaining
-        arr.set(k, R[j]);         // left array to get into proper position
+      else{
+        arr.set(k, R[j]);
         ++j;
         ret += (size1 - i);
       }
@@ -59,7 +55,7 @@ public class Inversions{
       arr.set(k, L[i]);
       ++i;
       ++k;
-    }                             // add remaining elements from one arrays to sorted array
+    }
     while (j < size2){
       arr.set(k, R[j]);
       ++j;
