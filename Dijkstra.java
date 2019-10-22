@@ -8,80 +8,52 @@ import java.util.List;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-class TopSorter  {
+class Dijkstra  {
 	ArrayList<Vertex> vertices = new ArrayList<Vertex>();
+	ArrayList<HashMap<Vertex, Integer>> pq = new ArrayList<HashMap<Vertex, Integer>>();
    boolean directed;
    int nvertices;
    int nedges;
-   int numComp;
 
-   public TopSorter(){
+   public Dijkstra(){
    }
 
-	 public ArrayList<Integer> topSortGenerator(String filename){
-		 ArrayList<Integer> degreeList;
-		 ArrayList<Integer> ret = new ArrayList<Integer>();
-		 boolean dag = true;
+	 public static int[][] findShortPaths(String filename){
+		 Dijkstra d = new Dijkstra();
+		 Vertex v;
+		 int[][] ret;
 		 try{
-			 readfile_graph(filename);
+			 d.readfile_graph(filename);
 		 }
 		 catch (FileNotFoundException e){
 			 System.err.println("File not found");
 			 System.exit(-1);
 		 }
-
-		 degreeList = calcInDegree();
-		 while(dag){
-			 if(!degreeList.contains(0)){
-				 dag = false;
-				 break;
-			 }
-			 for(int j = 0; j < degreeList.size(); ++j){
-				 if (degreeList.get(j) == 0){
-					 ret.add(j + 1);
-					 degreeList = reduceDegree(degreeList, j);
-					 break;
-				 }
-			 }
+		 for (int i = 0; i < d.nvertices; ++i){
+			 d.pq.set(i, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(i), 2147483646)));
 		 }
-		 for (int i = ret.size(); i < vertices.size(); ++i){
-			 ret.add(-1);
+		 d.pq.set(0, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), 2147483646)));
+		 while(!d.pq.isEmpty()){
+			 v = d.extractMin(d.pq);
 		 }
-		 return ret;
 	 }
 
-	 public ArrayList<Integer> calcInDegree(){
-		 ArrayList<Integer> ret;
-		 ArrayList<Vertex> list;
-		 int check;
-		 Integer[] arr = new Integer[vertices.size()];
-		 for(int a = 0; a < vertices.size(); ++a){
-			 arr[a] = 0;
+	 public Vertex extractMin(ArrayList<HashMap<Vertex, Integer>> pq){
+		 int min = 2147483645;
+		 Vertex ret = null;
+		 for(int i = 0; i < this.nvertices; ++i){
+			 if(pq.get(i).get(this.vertices.get(i)) < min)
+			 	ret = this.vertices.get(i);
+				min = pq.get(i).get(this.vertices.get(i));
 		 }
-		 for(int i = 0; i < vertices.size(); ++i){
-			 list = vertices.get(i).edges;
-			 for (int j = 0; j < list.size(); ++j){
-				 arr[list.get(j).key - 1] += 1;
-			 }
-		 }
-		 ret = new ArrayList<Integer>(Arrays.asList(arr));
-		 return ret;
-	 }
-
-	 public ArrayList<Integer> reduceDegree(ArrayList<Integer> given, int index){
-		 ArrayList<Integer> ret = given;
-		 Vertex u = vertices.get(index);
-		 ArrayList<Vertex> edgeList = u.edges;
-		 for (int i = 0; i < edgeList.size(); ++i){
-			 ret.set(edgeList.get(i).key - 1, ret.get(edgeList.get(i).key - 1) - 1);
-		 }
-		 ret.set(index, -1);
 		 return ret;
 	 }
 
    void readfile_graph(String filename) throws FileNotFoundException  {
-      int x,y;
+      int x,y, w;
         //read the input
       FileInputStream in = new FileInputStream(new File(filename));
       Scanner sc = new Scanner(in);
@@ -99,13 +71,11 @@ class TopSorter  {
 			// System.out.println(i + " compare " + (i<=nedges) + " nedges " + nedges);
          x=sc.nextInt();
 			y=sc.nextInt();
+			w = sc.nextInt();
          //  System.out.println("x  " + x + "  y:  " + y  + " i " + i);
-			insert_edge(x,y,directed);
+			insert_edge(x,y,directed, w);
 		}
-		   // order edges to make it easier to see what is going on
-		for(int i=0;i<=nvertices-1;i++)	{
-			Collections.sort(vertices.get(i).edges);
-		}
+
 	}
 
    static void process_vertex_early(Vertex v)	{
@@ -129,7 +99,7 @@ class TopSorter  {
 		else System.out.printf("edge (%d,%d)\n not in valid class=%d",x.key,y.key,c);
 	}
 
-	static void initialize_search(TopSorter g)	{
+	static void initialize_search(Dijkstra g)	{
 		for(Vertex v : g.vertices)		{
 			v.processed = v.discovered = false;
 			v.parent = null;
@@ -148,13 +118,13 @@ class TopSorter  {
 		return -1;
 	}
 
-	void insert_edge(int x, int y, boolean directed) 	{
+	void insert_edge(int x, int y, boolean directed, int weight) 	{
 		Vertex one = vertices.get(x-1);
       Vertex two = vertices.get(y-1);
-      one.edges.add(two);
+      one.edges.add(new HashMap<Vertex, Integer>(Map.of(two, weight)));
 		vertices.get(x-1).degree++;
 		if(!directed)
-			insert_edge(y,x,true);
+			insert_edge(y,x,true, weight);
 		else
 			nedges++;
 	}
@@ -165,14 +135,14 @@ class TopSorter  {
 		x.degree--;
 	}
 
-	void print_graph()	{
-		for(Vertex v : vertices)	{
-			System.out.println("vertex: "  + v.key);
-			for(Vertex w : v.edges)
-				System.out.print("  adjacency list: " + w.key);
-			System.out.println();
-		}
-	}
+	// void print_graph()	{
+	// 	for(Vertex v : vertices)	{
+	// 		System.out.println("vertex: "  + v.key);
+	// 		for(Vertex w : v.edges)
+	// 			System.out.print("  adjacency list: " + w.key);
+	// 		System.out.println();
+	// 	}
+	// }
 
    class Vertex implements Comparable<Vertex> {
       int key;
@@ -184,11 +154,12 @@ class TopSorter  {
       int entry_time = 0;
       int exit_time = 0;
       Vertex parent = null;
-      ArrayList<Vertex> edges = new ArrayList<Vertex>();
+      ArrayList<HashMap<Vertex, Integer>> edges = new ArrayList<HashMap<Vertex, Integer>>();
 
       public Vertex(int tkey){
          key = tkey;
       }
+
       public int compareTo(Vertex other){
          if (this.key > other.key){
             return 1;
