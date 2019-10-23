@@ -13,8 +13,8 @@ public class DijkstraTester{
   };
     int[][] mine;
 
-    mine = ts.findShortPaths("dijkstra_test1.txt");
-    for(int i = 0; i < answer.size(); ++i){
+    mine = Dijkstra.findShortPaths("dijkstra_test1.txt");
+    for(int i = 0; i < answer.length; ++i){
       for(int j = 0; j < answer[i].length; ++j){
         if (answer[i][j] != mine[i][j]){
           System.out.println("Position -" + i + ", " + j + "- is wrong. Put " + mine[i][j]);

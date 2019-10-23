@@ -23,8 +23,9 @@ class Dijkstra  {
 
 	 public static int[][] findShortPaths(String filename){
 		 Dijkstra d = new Dijkstra();
-		 Vertex v;
-		 int[][] ret;
+		 int h, w = 0, size = 0;
+		 HashMap<Vertex, Integer> hm;
+
 		 try{
 			 d.readfile_graph(filename);
 		 }
@@ -32,21 +33,38 @@ class Dijkstra  {
 			 System.err.println("File not found");
 			 System.exit(-1);
 		 }
+		 int[][] ret = new int[d.nvertices][3];
+		 for(int i = 0; i < d.nvertices; ++i){
+			 ret[i] = new int[]{0,0,0};
+		 }
 		 for (int i = 0; i < d.nvertices; ++i){
-			 d.pq.set(i, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(i), 2147483646)));
+			 d.pq.add(new HashMap<Vertex, Integer>(Map.of(d.vertices.get(i), 2147483647)));
 		 }
-		 d.pq.set(0, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), 2147483646)));
+		 d.pq.set(0, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), 0)));
+		 System.out.println(d.pq);
 		 while(!d.pq.isEmpty()){
-			 v = d.extractMin(d.pq);
+			 h = d.extractMin(d.pq);
+			 hm = d.pq.get(h);
+			 d.pq.set(h, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), -1))); // make weight negative in the Priority Queue only so it can't be re-read and doesn't mess up indexing
+			 ret[size] = new int[]{h, hm.get(d.vertices.get(h)), d.vertices.get(h).key};
+			 ++size;
+			 for (int i = 0; i < d.vertices.get(h).edges.size(); ++i){
+				 w = d.vertices.get(h).weights.get(i);
+				 if (d.pq.get(i).get(d.vertices.get(i)) > hm.get(d.vertices.get(h)) + w){
+					 d.pq.set(i, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(h), hm.get(d.vertices.get(h)) + w)));
+				 }
+			 }
+
 		 }
+		 return ret;
 	 }
 
-	 public Vertex extractMin(ArrayList<HashMap<Vertex, Integer>> pq){
+	 public int extractMin(ArrayList<HashMap<Vertex, Integer>> pq){
 		 int min = 2147483645;
-		 Vertex ret = null;
+		 int ret = 0;
 		 for(int i = 0; i < this.nvertices; ++i){
-			 if(pq.get(i).get(this.vertices.get(i)) < min)
-			 	ret = this.vertices.get(i);
+			 if(pq.get(i).get(this.vertices.get(i)) < min && pq.get(i).get(this.vertices.get(i)) >= 0)
+			 	ret = i;
 				min = pq.get(i).get(this.vertices.get(i));
 		 }
 		 return ret;
@@ -121,7 +139,8 @@ class Dijkstra  {
 	void insert_edge(int x, int y, boolean directed, int weight) 	{
 		Vertex one = vertices.get(x-1);
       Vertex two = vertices.get(y-1);
-      one.edges.add(new HashMap<Vertex, Integer>(Map.of(two, weight)));
+      one.edges.add(two);
+			one.weights.add(weight);
 		vertices.get(x-1).degree++;
 		if(!directed)
 			insert_edge(y,x,true, weight);
@@ -135,14 +154,23 @@ class Dijkstra  {
 		x.degree--;
 	}
 
-	// void print_graph()	{
-	// 	for(Vertex v : vertices)	{
-	// 		System.out.println("vertex: "  + v.key);
-	// 		for(Vertex w : v.edges)
-	// 			System.out.print("  adjacency list: " + w.key);
-	// 		System.out.println();
-	// 	}
-	// }
+	void print_graph()	{
+		for(Vertex v : vertices)	{
+			System.out.println("vertex: "  + v.key);
+			for(Vertex w : v.edges)
+				System.out.print("  adjacency list: " + w.key);
+			System.out.println();
+		}
+	}
+
+	public void print_matrix(int[][] mat){
+		for(int i = 0; i < mat.length; ++i){
+			for(int j = 0; j < mat[i].length; ++j){
+				System.out.print(mat[i][j]);
+			}
+			System.out.println();
+		}
+	}
 
    class Vertex implements Comparable<Vertex> {
       int key;
@@ -154,7 +182,8 @@ class Dijkstra  {
       int entry_time = 0;
       int exit_time = 0;
       Vertex parent = null;
-      ArrayList<HashMap<Vertex, Integer>> edges = new ArrayList<HashMap<Vertex, Integer>>();
+      ArrayList<Vertex> edges = new ArrayList<Vertex>();
+			ArrayList<Integer> weights = new ArrayList<Integer>();
 
       public Vertex(int tkey){
          key = tkey;
