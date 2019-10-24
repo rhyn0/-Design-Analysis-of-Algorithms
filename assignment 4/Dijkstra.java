@@ -13,7 +13,7 @@ import java.util.Map;
 
 class Dijkstra  {
 	ArrayList<Vertex> vertices = new ArrayList<Vertex>();
-	ArrayList<HashMap<Vertex, Integer>> pq = new ArrayList<HashMap<Vertex, Integer>>();
+
    boolean directed;
    int nvertices;
    int nedges;
@@ -23,8 +23,8 @@ class Dijkstra  {
 
 	 public static int[][] findShortPaths(String filename){
 		 Dijkstra d = new Dijkstra();
-		 int h, w = 0, size = 0;
-		 HashMap<Vertex, Integer> hm;
+		 ArrayList<HashMap<Integer, Integer>> pq = new ArrayList<HashMap<Integer, Integer>>();
+		 int h, parent, pWeight = 0, w = 0, size = 0;
 
 		 try{
 			 d.readfile_graph(filename);
@@ -38,20 +38,26 @@ class Dijkstra  {
 			 ret[i] = new int[]{0,0,0};
 		 }
 		 for (int i = 0; i < d.nvertices; ++i){
-			 d.pq.add(new HashMap<Vertex, Integer>(Map.of(d.vertices.get(i), 2147483647)));
+			 pq.add(i, new HashMap<Integer, Integer>(Map.of(i + 1, 2147483647))); //using MAX_INT value for java
 		 }
-		 d.pq.set(0, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), 0)));
-		 System.out.println(d.pq);
-		 while(!d.pq.isEmpty()){
-			 h = d.extractMin(d.pq);
-			 hm = d.pq.get(h);
-			 d.pq.set(h, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(0), -1))); // make weight negative in the Priority Queue only so it can't be re-read and doesn't mess up indexing
-			 ret[size] = new int[]{h, hm.get(d.vertices.get(h)), d.vertices.get(h).key};
+		 pq.set(0, new HashMap<Integer, Integer>(Map.of(1, 0)));
+
+		 for (int j = 0; j < d.nvertices; ++j){ //only needs to run for number of vertices since we 'remove' a vertex on each call
+			 h = d.extractMin(pq);
+			 parent = (int)(pq.get(h).keySet().toArray()[0]);
+			 pWeight = (int)(pq.get(h).values().toArray()[0]);
+			 ret[size] = new int[]{h + 1, pWeight, parent};
 			 ++size;
+			 // make weight negative in the Priority Queue only so it can't be re-read and doesn't mess up indexing
+			 pq.set(h, new HashMap<Integer, Integer>(Map.of(h + 1, -1)));
+
+
+
 			 for (int i = 0; i < d.vertices.get(h).edges.size(); ++i){
 				 w = d.vertices.get(h).weights.get(i);
-				 if (d.pq.get(i).get(d.vertices.get(i)) > hm.get(d.vertices.get(h)) + w){
-					 d.pq.set(i, new HashMap<Vertex, Integer>(Map.of(d.vertices.get(h), hm.get(d.vertices.get(h)) + w)));
+				 //im sorry that the data structures are super confusing
+				 if ((int)(pq.get(d.vertices.get(h).edges.get(i).key - 1).values().toArray()[0]) > pWeight + w){
+					 pq.set(d.vertices.get(h).edges.get(i).key - 1, new HashMap<Integer, Integer>(Map.of(h + 1, pWeight + w)));
 				 }
 			 }
 
@@ -59,13 +65,15 @@ class Dijkstra  {
 		 return ret;
 	 }
 
-	 public int extractMin(ArrayList<HashMap<Vertex, Integer>> pq){
-		 int min = 2147483645;
+	 public int extractMin(ArrayList<HashMap<Integer, Integer>> pq){
+		 int min = 2147483647;
 		 int ret = 0;
 		 for(int i = 0; i < this.nvertices; ++i){
-			 if(pq.get(i).get(this.vertices.get(i)) < min && pq.get(i).get(this.vertices.get(i)) >= 0)
+			// ignore all values below 0, dont constantly add the start node over and over
+			 if(((int)(pq.get(i).values().toArray()[0]) < min) && ((int)(pq.get(i).values().toArray()[0]) >= 0)){
 			 	ret = i;
-				min = pq.get(i).get(this.vertices.get(i));
+				min = (int)(pq.get(i).values().toArray()[0]);
+			}
 		 }
 		 return ret;
 	 }
@@ -157,8 +165,9 @@ class Dijkstra  {
 	void print_graph()	{
 		for(Vertex v : vertices)	{
 			System.out.println("vertex: "  + v.key);
-			for(Vertex w : v.edges)
-				System.out.print("  adjacency list: " + w.key);
+			for(int i = 0; i < v.edges.size(); ++i){
+				System.out.print("  adjacency list: " + v.edges.get(i).key + " w: " + v.weights.get(i));
+			}
 			System.out.println();
 		}
 	}
@@ -166,7 +175,7 @@ class Dijkstra  {
 	public void print_matrix(int[][] mat){
 		for(int i = 0; i < mat.length; ++i){
 			for(int j = 0; j < mat[i].length; ++j){
-				System.out.print(mat[i][j]);
+				System.out.print(mat[i][j] + " ");
 			}
 			System.out.println();
 		}

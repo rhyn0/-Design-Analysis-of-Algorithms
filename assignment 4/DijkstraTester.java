@@ -6,9 +6,9 @@ public class DijkstraTester{
     Dijkstra ts = new Dijkstra();
     int[][] answer = {
     {1, 0, 1},
-    {2, 6, 1},
-    {3, 5, 1},
     {4, 4, 1},
+    {3, 5, 1},
+    {2, 6, 1},
     {5, 12, 3}
   };
     int[][] mine;
@@ -17,7 +17,7 @@ public class DijkstraTester{
     for(int i = 0; i < answer.length; ++i){
       for(int j = 0; j < answer[i].length; ++j){
         if (answer[i][j] != mine[i][j]){
-          System.out.println("Position -" + i + ", " + j + "- is wrong. Put " + mine[i][j]);
+          System.out.println("Position - " + i + ", " + j + " - is wrong. Put " + mine[i][j]);
         }
       }
     }
