@@ -29,21 +29,27 @@ public class EditDistance{
           table[i][j] = Math.min(1 + table[i - 1][j - 1], Math.min(2 + table[i - 1][j], 2 + table[i][j - 1]));
       }
     }
+    // for(int i = 0; i <= x.length(); ++i){
+    //   for(int j = 0; j <= y.length(); ++j)
+    //     System.out.print(table[j][i] + " ");
+    //
+    //   System.out.println();
+    // }
 
     //traceback
     int posI = y.length(), posJ = x.length();
     for(int i = answerKey.size() - 1; i >= 0; --i){
-      if (table[posI][posJ] == table[posI - 1][posJ - 1]){
+      if ((table[posI][posJ] == table[posI - 1][posJ - 1]) && (y.charAt(posI - 1) == x.charAt(posJ - 1))) {
         answerKey.set(i, 0);
         --posI;
         --posJ;
       }
-      else if (table[posI][posJ] == (table[posI - 1][posJ - 1] - 1)){
+      else if (table[posI][posJ] == (table[posI - 1][posJ - 1] + 1)){
         answerKey.set(i, 1);
         --posI;
         --posJ;
       }
-      else if(table[posI][posJ] == (table[posI - 1][posJ] - 2)){
+      else if(table[posI][posJ] == (table[posI - 1][posJ] + 2)){
         answerKey.set(i,2);
         --posI;
       }
@@ -68,8 +74,13 @@ public class EditDistance{
         break;
       }
     }
-
-    traceback(x, y, answerKey, table[y.length()][x.length()]);
+    // for(int i = 0; i < answerKey.size(); ++i)
+    //   System.out.print(answerKey.get(i) + " ");
+    // System.out.println();
+    if (x.length() > 15 || y.length() > 15)
+      System.out.println(args[0] + "\t" + table[y.length()][x.length()]);
+    else
+      traceback(x, y, answerKey, table[y.length()][x.length()]);
   }
 
   public static Scanner readfile(String filename){
