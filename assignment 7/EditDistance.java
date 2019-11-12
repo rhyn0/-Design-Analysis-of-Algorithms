@@ -4,12 +4,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.lang.Math;
+import java.lang.System;
 
 
 public class EditDistance{
 
   public static void main(String[] args){
-    Scanner input = readfile(args[0]);
+    int file;
+    Scanner input = null;
+    if((file = getArgs(args)) != -1){
+      input = readfile(args[file]);
+    }
+    else
+      System.exit(-1);
+
     String x = input.nextLine();
     String y = input.nextLine();
     int[][] table = new int[y.length() + 1][x.length() + 1];
@@ -77,8 +85,8 @@ public class EditDistance{
     // for(int i = 0; i < answerKey.size(); ++i)
     //   System.out.print(answerKey.get(i) + " ");
     // System.out.println();
-    if (x.length() > 15 || y.length() > 15)
-      System.out.println(args[0] + "\t" + table[y.length()][x.length()]);
+    if (args.length > 1)
+      System.out.println(args[file] + "\t" + table[y.length()][x.length()]);
     else
       traceback(x, y, answerKey, table[y.length()][x.length()]);
   }
@@ -94,6 +102,18 @@ public class EditDistance{
       System.err.println("File wasn't found: " + e);
     }
     return sc;
+  }
+
+  public static int getArgs(String[] args){
+    if(args.length > 2){
+      System.err.println("wrong amount of arguments");
+      System.exit(-1);
+    }
+    for(int i = 0; i < args.length; ++i){
+      if(!args[i].equals("p"))
+        return i;
+    }
+    return -1;
   }
 
   public static void traceback(String x, String y, ArrayList<Integer> answer, int minEdit){
