@@ -44,51 +44,10 @@ public class EditDistance{
     //   System.out.println();
     // }
 
-    //traceback
-    int posI = y.length(), posJ = x.length();
-    for(int i = answerKey.size() - 1; i >= 0; --i){
-      if ((table[posI][posJ] == table[posI - 1][posJ - 1]) && (y.charAt(posI - 1) == x.charAt(posJ - 1))) {
-        answerKey.set(i, 0);
-        --posI;
-        --posJ;
-      }
-      else if (table[posI][posJ] == (table[posI - 1][posJ - 1] + 1)){
-        answerKey.set(i, 1);
-        --posI;
-        --posJ;
-      }
-      else if(table[posI][posJ] == (table[posI - 1][posJ] + 2)){
-        answerKey.set(i,2);
-        --posI;
-      }
-      else{
-        answerKey.set(i,2);
-        --posJ;
-      }
-      if (posI == 0){
-        --i;
-        while(i >= 0){
-          answerKey.set(i, 2);
-          --i;
-        }
-        break;
-      }
-      if (posJ == 0){
-        --i;
-        while(i >= 0){
-          answerKey.set(i, 2);
-          --i;
-        }
-        break;
-      }
-    }
-    // for(int i = 0; i < answerKey.size(); ++i)
-    //   System.out.print(answerKey.get(i) + " ");
-    // System.out.println();
     if (args.length > 1)
       System.out.println(args[file] + "\t" + table[y.length()][x.length()]);
     else
-      traceback(x, y, answerKey, table[y.length()][x.length()]);
+      traceback(x, y, answerKey, table);
   }
 
   public static Scanner readfile(String filename){
@@ -116,7 +75,47 @@ public class EditDistance{
     return -1;
   }
 
-  public static void traceback(String x, String y, ArrayList<Integer> answer, int minEdit){
+  public static void traceback(String x, String y, ArrayList<Integer> answerKey, int[][] table){
+    int posI = y.length(), posJ = x.length();
+    for(int i = answerKey.size() - 1; i >= 0; --i){
+      if (posI == 0){             //case for hitting bounds of table
+        while(i >= 0){
+          answerKey.set(i, 2);
+          --i;
+        }
+        break;
+      }
+      if (posJ == 0){
+        while(i >= 0){
+          answerKey.set(i, 2);
+          --i;
+        }
+        break;
+      }
+
+      if ((table[posI][posJ] == table[posI - 1][posJ - 1]) && (y.charAt(posI - 1) == x.charAt(posJ - 1))) { //equal and diagonal move
+        answerKey.set(i, 0);
+        --posI;
+        --posJ;
+      }
+      else if (table[posI][posJ] == (table[posI - 1][posJ - 1] + 1)){   //wrong and diagonal move
+        answerKey.set(i, 1);
+        --posI;
+        --posJ;
+      }
+      else if(table[posI][posJ] == (table[posI - 1][posJ] + 2)){  //put a space
+        answerKey.set(i,2);
+        --posI;
+      }
+      else{
+        answerKey.set(i,2);
+        --posJ;
+      }
+    }
+    printAnswer(x, y, answerKey, table[y.length()][x.length()]);
+  }
+
+  public static void printAnswer(String x, String y, ArrayList<Integer> answer, int minEdit){
     boolean m = (x.length() >= y.length() ? true : false);
     int lessP = 0;
     System.out.println("Edit distance = " + minEdit);
