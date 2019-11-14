@@ -37,9 +37,9 @@ public class EditDistance{
           table[i][j] = Math.min(1 + table[i - 1][j - 1], Math.min(2 + table[i - 1][j], 2 + table[i][j - 1]));
       }
     }
-    // for(int i = 0; i <= x.length(); ++i){
+    // for(int i = 0; i <= x.length(); ++i){ //print the table
     //   for(int j = 0; j <= y.length(); ++j)
-    //     System.out.print(table[j][i] + " ");
+    //     System.out.printf("%2d ", table[j][i]);
     //
     //   System.out.println();
     // }
@@ -78,23 +78,11 @@ public class EditDistance{
   public static void traceback(String x, String y, ArrayList<Integer> answerKey, int[][] table){
     int posI = y.length(), posJ = x.length();
     for(int i = answerKey.size() - 1; i >= 0; --i){
-      if (posI == 0){             //case for hitting bounds of table
-        while(i >= 0){
-          answerKey.set(i, 2);
-          --i;
-        }
-        break;
-      }
-      if (posJ == 0){
-        while(i >= 0){
-          answerKey.set(i, 2);
-          --i;
-        }
-        break;
-      }
 
       if ((table[posI][posJ] == table[posI - 1][posJ - 1]) && (y.charAt(posI - 1) == x.charAt(posJ - 1))) { //equal and diagonal move
         answerKey.set(i, 0);
+        System.out.println("index " + posJ + " is matching, i is: " + i);
+        System.out.println("index " + posI + " is matching");
         --posI;
         --posJ;
       }
@@ -105,14 +93,33 @@ public class EditDistance{
       }
       else if(table[posI][posJ] == (table[posI - 1][posJ] + 2)){  //put a space
         answerKey.set(i,2);
+        System.out.println("index " + i + " is wrong in row " + posI);
         --posI;
       }
       else{
         answerKey.set(i,2);
+
         --posJ;
       }
+      if (posI == 0 || posJ == 0){
+        finishAnswer(answerKey, posJ, posI);
+        break;
+      }
+
     }
+    System.out.println(answerKey);
     printAnswer(x, y, answerKey, table[y.length()][x.length()]);
+  }
+
+  public static void finishAnswer(ArrayList<Integer> answer, int j, int i){
+    while(j > 0){
+      answer.set(j - 1, 2);
+      --j;
+    }
+    while(i > 0){
+      answer.set(i - 1, 2);
+      --i;
+    }
   }
 
   public static void printAnswer(String x, String y, ArrayList<Integer> answer, int minEdit){
