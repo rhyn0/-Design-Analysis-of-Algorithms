@@ -1,0 +1,17 @@
+while(!pq.isEmpty()){
+  curr = pq.remove(0);
+  choice = ratS.get(curr.getLevel() + 1);
+  System.out.println("branching for level: " + (curr.getLevel() + 1));
+  if(curr.getBound() > best.getValue()){
+    temp = new BBNode(curr.getLevel() + 1, curr.getValue() + choice.getValue(), curr.getWeight() + choice.getWeight(), curr.getBits() + "1");
+    if ((temp.getWeight() <= capacity) && temp.getValue() > best.getValue())
+      best = temp;
+    temp.setBound(bound(temp, capacity, ratS));
+    if(temp.getBound() > best.getValue())
+      pq.add(temp);
+    temp = new BBNode(curr.getLevel() + 1, curr.getValue(), curr.getWeight(), curr.getBits() + "0");
+    temp.setBound(bound(temp, capacity, ratS));
+    if (temp.getBound() > best.getValue())
+      pq.add(temp);
+    Collections.sort(pq);
+  }
