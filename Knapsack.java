@@ -10,6 +10,8 @@ import java.lang.String;
 import java.lang.Integer;
 import java.util.Collections;
 
+//used https://www.slideshare.net/AbhishekSingh1904/0-1-knapsack-using-branch-and-bound?qid=d266ef0f-ccf8-4fa2-bb8a-f00873269f83&v=&b=&from_search=1
+//for its pseudo code of upper bound. my implementation still uses a priority queue just with a fractional greedy upper bound function
 
 public class Knapsack{
 
@@ -52,12 +54,13 @@ public class Knapsack{
     ArrayList<Item> answer = null, ratS = sortRatio(items);
     ArrayList<BBNode> pq = new ArrayList<>(n);
     int[] ans = new int[n];
+
     String bits;
     Item choice;
     BBNode curr, temp, best = new BBNode(-1, 0, 0, "");
 
     curr = new BBNode(-1, 0, 0, ""); //level, value, weight, bitString
-    curr.setBound(bound(curr, capacity, ratS));
+    curr.setBound(gbound(curr, capacity, ratS));
     pq.add(curr);
     while(!pq.isEmpty()){
       curr = pq.remove(0);
@@ -70,12 +73,12 @@ public class Knapsack{
           best = temp;
         //  System.out.println("updating max val to: " + best.getValue() + " with bitString: " + best.getBits() + " at level: " + best.getLevel());
         }
-        temp.setBound(bound(temp, capacity, ratS));
+        temp.setBound(gbound(temp, capacity, ratS));
         // System.out.println(temp);
         if(temp.getBound() > best.getValue())
           pq.add(temp);
         temp = new BBNode(curr.getLevel() + 1, curr.getValue(), curr.getWeight(), curr.getBits() + "0");
-        temp.setBound(bound(temp, capacity, ratS));
+        temp.setBound(gbound(temp, capacity, ratS));
         // System.out.println(temp);
         if (temp.getBound() > best.getValue())
           pq.add(temp);
@@ -92,13 +95,28 @@ public class Knapsack{
     printAnswer("Branch and Bound", answer, best.getValue(), best.getWeight());
   }
 
-  //return t.getValue() + dp[capacity - t.getWeight()];
+  //return (t.getValue() + dp[capacity - t.getWeight()]);
   //would work if doing dfs-like approach
   protected static float bound(BBNode t, int capacity, ArrayList<Item> rs){
     if ((t.getWeight() >= capacity) || (t.getLevel() == rs.size() - 1))
       return 0;
     else
       return t.getValue() + (capacity - t.getWeight()) * rs.get(t.getLevel() + 1).getRatio();
+  }
+
+  protected static float gbound(BBNode t, int capacity, ArrayList<Item> rs){
+    float b = t.getValue();
+    int weight = t.getWeight(), i = t.getLevel() + 1;
+    if (t.getWeight() >= capacity)
+      return 0;
+    while((i < rs.size()) && (weight + rs.get(i).getWeight() <= capacity)){
+      weight += rs.get(i).getWeight();
+      b += rs.get(i).getValue();
+      ++i;
+    }
+    if (i < rs.size())
+      b = b + (capacity - weight) * rs.get(i).getRatio();
+    return b;
   }
 
   public static void printAnswer(String function, ArrayList<Item> solution, int v, int w){
