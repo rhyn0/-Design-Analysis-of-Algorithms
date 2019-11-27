@@ -51,30 +51,31 @@ public class Knapsack{
   public static void callBB(int n, ArrayList<Item> items, int capacity){
     ArrayList<Item> answer = null, ratS = sortRatio(items);
     ArrayList<BBNode> pq = new ArrayList<>(n);
-    int[] ans = new int[n], dp = buildTable(ratS, n, capacity)[n];
+    int[] ans = new int[n];
     String bits;
     Item choice;
     BBNode curr, temp, best = new BBNode(-1, 0, 0, "");
 
     curr = new BBNode(-1, 0, 0, ""); //level, value, weight, bitString
-    curr.setBound(bound(curr, capacity, ratS, dp));
+    curr.setBound(bound(curr, capacity, ratS));
     pq.add(curr);
     while(!pq.isEmpty()){
       curr = pq.remove(0);
+      //System.out.println(curr);
       choice = ratS.get(curr.getLevel() + 1);
-    //  System.out.println("branching for level: " + (curr.getLevel() + 1));
+      System.out.println("branching for level: " + (curr.getLevel() + 1));
       if(curr.getBound() > best.getValue()){
         temp = new BBNode(curr.getLevel() + 1, curr.getValue() + choice.getValue(), curr.getWeight() + choice.getWeight(), curr.getBits() + "1");
         if ((temp.getWeight() <= capacity) && temp.getValue() > best.getValue()){
           best = temp;
-          System.out.println("updating max val to: " + best.getValue() + " with bitString: " + best.getBits() + " at level: " + best.getLevel());
+        //  System.out.println("updating max val to: " + best.getValue() + " with bitString: " + best.getBits() + " at level: " + best.getLevel());
         }
-        temp.setBound(bound(temp, capacity, ratS, dp));
+        temp.setBound(bound(temp, capacity, ratS));
         // System.out.println(temp);
         if(temp.getBound() > best.getValue())
           pq.add(temp);
         temp = new BBNode(curr.getLevel() + 1, curr.getValue(), curr.getWeight(), curr.getBits() + "0");
-        temp.setBound(bound(temp, capacity, ratS, dp));
+        temp.setBound(bound(temp, capacity, ratS));
         // System.out.println(temp);
         if (temp.getBound() > best.getValue())
           pq.add(temp);
@@ -91,12 +92,13 @@ public class Knapsack{
     printAnswer("Branch and Bound", answer, best.getValue(), best.getWeight());
   }
 
-  protected static float bound(BBNode t, int capacity, ArrayList<Item> rs, int[] dp){
+  //return t.getValue() + dp[capacity - t.getWeight()];
+  //would work if doing dfs-like approach
+  protected static float bound(BBNode t, int capacity, ArrayList<Item> rs){
     if ((t.getWeight() >= capacity) || (t.getLevel() == rs.size() - 1))
       return 0;
     else
-      return t.getValue() + dp[capacity - t.getWeight()];
-      //return t.getValue() + (capacity - t.getWeight()) * rs.get(t.getLevel() + 1).getRatio();
+      return t.getValue() + (capacity - t.getWeight()) * rs.get(t.getLevel() + 1).getRatio();
   }
 
   public static void printAnswer(String function, ArrayList<Item> solution, int v, int w){
@@ -209,23 +211,6 @@ public class Knapsack{
     }
     return ret;
   }
-
-  // public static ArrayList<Item> stringToIndex(BBNode b, ArrayList<Item> items, ArrayList<Item> rs){
-  //   ArrayList<Item> ret = new ArrayList<>();
-  //   int[] ans = new int[items.size()];
-  //   String bits = b.getBits();
-  //   for(int i = 0; i < bits.length(); ++i){
-  //     if(bits.charAt(i) == '1')
-  //       ans[rs.get(i).getKey() - 1] = 1;
-  //     //  ret.add(items.get(rs.get(i).getKey() - 1));
-  //   }
-  //   for(int i = 0; i < ans.length; ++i){
-  //     if(ans[i] == 1)
-  //       ret.add(items.get(i));
-  //   }
-  //   //Collections.sort(ret);
-  //   return ret;
-  // }
 
   //old version of sortRatio
   // Item temp, hold;
@@ -348,5 +333,11 @@ class BBNode implements Comparable<BBNode>{
 
   public int compareTo(BBNode a){
     return a.getValue() - this.getValue();
+    // if (a.getBound() > this.getBound())
+    //   return 1;
+    // else if (a.getBound() < this.getBound())
+    //   return -1;
+    // else
+    //   return a.getValue() - this.getValue();
   }
 }
