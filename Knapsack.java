@@ -26,11 +26,12 @@ public class Knapsack{
       items.add(a);
     }
     capacity = input.nextInt();
-    //printArray(sortRatio(items));
+
     //option 1
      //callBrute(n, items, capacity);
-     //callGreedy(n, items, capacity);
+    // callGreedy(n, items, capacity);
      //callDynamic(n, items, capacity);
+
     //option 2
     callBB(n, items, capacity);
 
@@ -66,7 +67,7 @@ public class Knapsack{
       curr = pq.remove(0);
       //System.out.println(curr);
       choice = ratS.get(curr.getLevel() + 1);
-      System.out.println("branching for level: " + (curr.getLevel() + 1));
+     //System.out.println("branching for level: " + (curr.getLevel() + 1));
       if(curr.getBound() > best.getValue()){
         temp = new BBNode(curr.getLevel() + 1, curr.getValue() + choice.getValue(), curr.getWeight() + choice.getWeight(), curr.getBits() + "1");
         if ((temp.getWeight() <= capacity) && temp.getValue() > best.getValue()){
@@ -115,7 +116,7 @@ public class Knapsack{
       ++i;
     }
     if (i < rs.size())
-      b = b + (capacity - weight) * rs.get(i).getRatio();
+      b = b + (float)0.89*(capacity - weight) * rs.get(i).getRatio();
     return b;
   }
 
@@ -153,9 +154,6 @@ public class Knapsack{
         ans = bits.clone();
       }
     }
-    for(int j = 0; j < n; ++j)
-      System.out.print(ans[j]);
-    System.out.println();
     answer = bitsToIndex(ans, items);
     printAnswer("Brute force", answer, totValue, totWeight);
   }
@@ -166,12 +164,9 @@ public class Knapsack{
     int totValue = 0, totWeight = 0;
     Item temp, hold;
     ratSorted = sortRatio(items);
-    printArray(ratSorted);
     for(int i = 0; i < n; ++i){
-      if(totWeight == capacity){
-        System.out.println("breaking for full sack");
+      if(totWeight == capacity)
         break;
-      }
 
       if ((totWeight + ratSorted.get(i).getWeight()) <= capacity){
         ans[ratSorted.get(i).getKey() - 1] = 1;
@@ -230,18 +225,6 @@ public class Knapsack{
     return ret;
   }
 
-  //old version of sortRatio
-  // Item temp, hold;
-  // int s = items.size();
-  // for(int i = 0; i < s; ++i){
-  //   temp = new Item(0,0,1);
-  //   for (int j = 0; j < items.size(); ++j){
-  //     if (items.get(j).getRatio() > temp.getRatio())
-  //       temp = items.get(j);
-  //   }
-  //   items.remove(temp);
-  //   ret.add(temp);
-  // }
   private static ArrayList<Item> sortRatio(ArrayList<Item> items){
     ArrayList<Item> ret = (ArrayList<Item>)items.clone();
 
