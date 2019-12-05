@@ -29,8 +29,8 @@ public class Knapsack{
 
     //option 1
      //callBrute(n, items, capacity);
-    // callGreedy(n, items, capacity);
-     //callDynamic(n, items, capacity);
+     //callGreedy(n, items, capacity);
+    // callDynamic(n, items, capacity);
 
     //option 2
     callBB(n, items, capacity);
@@ -51,6 +51,11 @@ public class Knapsack{
     return sc;
   }
 
+  /*Branch and Bound uses BBNode class
+  * BBNode has fields for float upperBound
+  *   fields for int level, value, Weight   - level signifies which item the node is about to compare to
+  *   fields for String bitString   - represents all previous choices to get to this node. does not use * as in spec to represent coming choices
+  */
   public static void callBB(int n, ArrayList<Item> items, int capacity){
     ArrayList<Item> answer = null, ratS = sortRatio(items);
     ArrayList<BBNode> pq = new ArrayList<>(n);
@@ -60,35 +65,32 @@ public class Knapsack{
     Item choice;
     BBNode curr, temp, best = new BBNode(-1, 0, 0, "");
 
+    long start = System.currentTimeMillis();
+    long end = System.currentTimeMillis();
+
     curr = new BBNode(-1, 0, 0, ""); //level, value, weight, bitString
     curr.setBound(gbound(curr, capacity, ratS));
     pq.add(curr);
-    while(!pq.isEmpty()){
+    while(!pq.isEmpty() && (end - start) < 60000){ //pq is a priorityQueue that is sorted by Value, BBNode implements Comparable
       curr = pq.remove(0);
-      //System.out.println(curr);
       choice = ratS.get(curr.getLevel() + 1);
-     //System.out.println("branching for level: " + (curr.getLevel() + 1));
-      if(curr.getBound() > best.getValue()){
-        temp = new BBNode(curr.getLevel() + 1, curr.getValue() + choice.getValue(), curr.getWeight() + choice.getWeight(), curr.getBits() + "1");
-        if ((temp.getWeight() <= capacity) && temp.getValue() > best.getValue()){
+      if(curr.getBound() > best.getValue()){ // does best-first search, so ignore nodes that are already surpassed
+        temp = new BBNode(curr.getLevel() + 1, curr.getValue() + choice.getValue(), curr.getWeight() + choice.getWeight(), curr.getBits() + "1"); //creates left child, include item
+        if ((temp.getWeight() <= capacity) && temp.getValue() > best.getValue())
           best = temp;
-        //  System.out.println("updating max val to: " + best.getValue() + " with bitString: " + best.getBits() + " at level: " + best.getLevel());
-        }
         temp.setBound(gbound(temp, capacity, ratS));
-        // System.out.println(temp);
         if(temp.getBound() > best.getValue())
           pq.add(temp);
-        temp = new BBNode(curr.getLevel() + 1, curr.getValue(), curr.getWeight(), curr.getBits() + "0");
+        temp = new BBNode(curr.getLevel() + 1, curr.getValue(), curr.getWeight(), curr.getBits() + "0"); //creates right child, ignore item
         temp.setBound(gbound(temp, capacity, ratS));
-        // System.out.println(temp);
         if (temp.getBound() > best.getValue())
           pq.add(temp);
         Collections.sort(pq);
       }
+      end = System.currentTimeMillis();
     }
-
     bits = best.getBits();
-    for(int i = 0; i < bits.length(); ++i){
+    for(int i = 0; i < bits.length(); ++i){   //convert the BBNode bitString into array form for printing answer
       if(bits.charAt(i) == '1')
         ans[ratS.get(i).getKey() - 1] = 1;
     }
@@ -96,16 +98,7 @@ public class Knapsack{
     printAnswer("Branch and Bound", answer, best.getValue(), best.getWeight());
   }
 
-  //return (t.getValue() + dp[capacity - t.getWeight()]);
-  //would work if doing dfs-like approach
-  protected static float bound(BBNode t, int capacity, ArrayList<Item> rs){
-    if ((t.getWeight() >= capacity) || (t.getLevel() == rs.size() - 1))
-      return 0;
-    else
-      return t.getValue() + (capacity - t.getWeight()) * rs.get(t.getLevel() + 1).getRatio();
-  }
-
-  protected static float gbound(BBNode t, int capacity, ArrayList<Item> rs){
+  protected static float gbound(BBNode t, int capacity, ArrayList<Item> rs){  // fractional greedy approach. adds highest value/weight ratio item until one won't fit then adds 89% of the fraction
     float b = t.getValue();
     int weight = t.getWeight(), i = t.getLevel() + 1;
     if (t.getWeight() >= capacity)
@@ -116,7 +109,7 @@ public class Knapsack{
       ++i;
     }
     if (i < rs.size())
-      b = b + (float)0.89*(capacity - weight) * rs.get(i).getRatio();
+      b = b + (float)(capacity - weight) * rs.get(Math.min(i + 1, rs.size() - 1)).getRatio(); //used 89% to lower the bound since this is 0-1 knapsack not fractional
     return b;
   }
 
@@ -160,10 +153,10 @@ public class Knapsack{
 
   public static void callGreedy(int n, ArrayList<Item> items, int capacity){
     ArrayList<Item> answer, ratSorted;
-    int[] ans = new int[n];
+    int[] ans = new int[n];       //bitstring represented in array to record answer
     int totValue = 0, totWeight = 0;
     Item temp, hold;
-    ratSorted = sortRatio(items);
+    ratSorted = sortRatio(items);  //sorts the passed in array list by ratio non-increasing
     for(int i = 0; i < n; ++i){
       if(totWeight == capacity)
         break;
@@ -175,13 +168,13 @@ public class Knapsack{
       }
     }
 
-    answer = bitsToIndex(ans, items);
+    answer = bitsToIndex(ans, items); //converts the bitstring into an array of the items making up knapsack
     printAnswer("Greedy (not necessarily optimal)", answer, totValue, totWeight);
   }
 
   public static void callDynamic(int n, ArrayList<Item> items, int capacity){
     ArrayList<Item> answer;
-    int[] ans = new int[n];
+    int[] ans = new int[n]; //bitstring that is filled in at traceback
     int[][] table;
     int weight = capacity;
     for(int k = 0; k < n; ++k)
@@ -196,7 +189,6 @@ public class Knapsack{
           break;
       }
     }
-
     answer = bitsToIndex(ans, items);
     printAnswer("Dynamic programming", answer, table[n][capacity], capacity - weight);
   }
@@ -206,15 +198,14 @@ public class Knapsack{
     for(int i = 0; i <= n; ++i){
       for(int j = 0; j <= capacity; ++j){
         if (i == 0 || j == 0)
-          table[i][j] = 0;
-        else if (items.get(i - 1).getWeight() <= j)
-          table[i][j] = Math.max(table[i - 1][j], table[i - 1][j - items.get(i - 1).getWeight()] + items.get(i - 1).getValue());
-        else
-          table[i][j] = 0;
+          table[i][j] = 0;    //fills in initial condiditions while iterating for max calls
+        else if (items.get(i - 1).getWeight() <= j)                                                                              // max(dont pick up, pick up)
+          table[i][j] = Math.max(table[i - 1][j], table[i - 1][j - items.get(i - 1).getWeight()] + items.get(i - 1).getValue()); //maximizing condition, max(above cell, diagonal cell)
       }
     }
     return table;
   }
+
 
   public static ArrayList<Item> bitsToIndex(int[] bits, ArrayList<Item> items){
     ArrayList<Item> ret = new ArrayList<>();
@@ -294,7 +285,6 @@ class RatioSorter implements Comparator<Item>{
 class BBNode implements Comparable<BBNode>{
   private float bound;
   private int level, value, weight;
-  private int[] arr;
   private String bits;
 
   public BBNode(int l, int v, int w, String b){
@@ -339,6 +329,6 @@ class BBNode implements Comparable<BBNode>{
     // else if (a.getBound() < this.getBound())
     //   return -1;
     // else
-    //   return a.getValue() - this.getValue();
+    //   return 0;
   }
 }
